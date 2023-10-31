@@ -1,9 +1,9 @@
 package config
 
 type AppConf struct {
-	KafkaConf   `ini:"kafka"`
-	TailLogConf `ini:"tail_log"`
-	EtcdConf    `ini:"etcd"`
+	KafkaConf `ini:"kafka"`
+	//TailLogConf `ini:"tail_log"`
+	EtcdConf `ini:"etcd"`
 }
 
 type KafkaConf struct {
@@ -11,13 +11,14 @@ type KafkaConf struct {
 	Topic   string `ini:"topic"`
 }
 
-type TailLogConf struct {
-	LogPath string `ini:"log_path"`
-}
+//type TailLogConf struct {
+//	LogPath string `ini:"log_path"`
+//}
 
 type EtcdConf struct {
-	Address string `ini:"address"`
-	Timeout int    `ini:"timeout"`
+	Address       string `ini:"address"`
+	Timeout       int    `ini:"timeout"`
+	CollectLogKey string `ini:"collect_log_key"`
 }
 
 func LoadConf(confType, filename string) (err error) {

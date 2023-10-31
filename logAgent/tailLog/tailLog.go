@@ -169,24 +169,55 @@
 package tailLog
 
 import (
+	"fmt"
 	"github.com/hpcloud/tail"
+	"shyCollector/logAgent/kafka"
+	"time"
 )
 
 var (
 	tailObj *tail.Tail
+	LogChan chan string
 )
 
-func Init(filename string) (err error) {
+type TailTask struct {
+	path     string
+	topic    string
+	instance *tail.Tail
+}
+
+func NewTailTask(path, topic string) (tailObj *TailTask) {
+	tailObj = &TailTask{
+		path:  path,
+		topic: topic,
+	}
+	tailObj.Init()
+	return tailObj
+}
+
+func (t *TailTask) Init() {
 	config := tail.Config{
 		ReOpen:    true,
 		Follow:    true,
 		Location:  &tail.SeekInfo{Offset: 0, Whence: 2},
 		MustExist: false,
 		Poll:      true}
-	tailObj, err = tail.TailFile(filename, config)
-	return
+	tailObj, err := tail.TailFile(t.path, config)
+	if err != nil {
+		panic(fmt.Sprintf("tailTask init failed: %v\n", err))
+	}
+	t.instance = tailObj
+
+	go t.run()
 }
 
-func ReadChan() <-chan *tail.Line {
-	return tailObj.Lines
+func (t *TailTask) run() {
+	for {
+		select {
+		case line := <-t.instance.Lines:
+			kafka.SendToKafka(t.topic, line.Text)
+		default:
+			time.Sleep(time.Millisecond * 500)
+		}
+	}
 }

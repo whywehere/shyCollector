@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gopkg.in/ini.v1"
 	"log/slog"
 	"shyCollector/logAgent/config"
@@ -26,29 +27,31 @@ func main() {
 	}
 	slog.Info("initialize kafka successfully")
 
-	// initialize tailLog
-	if err := tailLog.Init(cfg.LogPath); err != nil {
-		panic(err)
-	}
-	slog.Info("initialize tailLog successfully")
-
 	// initialize etcd
 	etcdAddr := []string{cfg.EtcdConf.Address}
 	if err := etcd.Init(etcdAddr, time.Duration(cfg.EtcdConf.Timeout)*time.Second); err != nil {
 		panic(err)
 	}
 	slog.Info("initialize etcd successfully")
-	go run()
-	select {}
-}
 
-func run() {
-	for {
-		select {
-		case line := <-tailLog.ReadChan():
-			kafka.SendToKafka(cfg.Topic, line.Text)
-		default:
-			time.Sleep(time.Millisecond * 500)
+	logEntryConf, err := etcd.GetConf("/xxx")
+	if err != nil {
+		slog.Error("etcd.GetConf", "Error", err)
+		return
+	}
+	slog.Info(fmt.Sprintf("get etcdConf successfully, %v\n", logEntryConf))
+	tailLog.Init(logEntryConf)
+
+	for _, entry := range logEntryConf {
+		// initialize tailLog
+		tailTask := tailLog.NewTailTask(entry.Path, entry.Topic)
+		for {
+			select {
+			case line := <-tailObj.Lines:
+				kafka.SendToKafka(entry.Topic, line.Text)
+			}
 		}
 	}
+	slog.Info("initialize tailLog successfully")
+	select {}
 }
