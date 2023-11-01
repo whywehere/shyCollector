@@ -8,6 +8,8 @@ import (
 	"shyCollector/logAgent/etcd"
 	"shyCollector/logAgent/kafka"
 	"shyCollector/logAgent/tailLog"
+	"shyCollector/utils"
+	"sync"
 	"time"
 )
 
@@ -22,7 +24,7 @@ func main() {
 
 	// initialize kafka
 	addr := []string{cfg.KafkaConf.Address}
-	if err := kafka.Init(addr); err != nil {
+	if err := kafka.Init(addr, cfg.KafkaConf.MaxSize); err != nil {
 		panic(err)
 	}
 	slog.Info("initialize kafka successfully")
@@ -33,25 +35,25 @@ func main() {
 		panic(err)
 	}
 	slog.Info("initialize etcd successfully")
-
-	logEntryConf, err := etcd.GetConf("/xxx")
+	ip, err := utils.GetOutBoundIp()
+	if err != nil {
+		panic(err)
+	}
+	collectLogKEY := fmt.Sprintf(cfg.CollectLogKey, ip)
+	logEntryConf, err := etcd.GetConf(collectLogKEY)
 	if err != nil {
 		slog.Error("etcd.GetConf", "Error", err)
 		return
 	}
-	slog.Info(fmt.Sprintf("get etcdConf successfully, %v\n", logEntryConf))
-	tailLog.Init(logEntryConf)
 
-	for _, entry := range logEntryConf {
-		// initialize tailLog
-		tailTask := tailLog.NewTailTask(entry.Path, entry.Topic)
-		for {
-			select {
-			case line := <-tailObj.Lines:
-				kafka.SendToKafka(entry.Topic, line.Text)
-			}
-		}
-	}
+	slog.Info(fmt.Sprintf("get etcdConf successfully, %v\n", logEntryConf))
+	// initialize tailLog
+	tailLog.Init(logEntryConf)
 	slog.Info("initialize tailLog successfully")
-	select {}
+
+	newConfChan := tailLog.NewConfChan()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go etcd.WatchConf(cfg.CollectLogKey, newConfChan)
+	wg.Wait()
 }

@@ -9,6 +9,7 @@ type AppConf struct {
 type KafkaConf struct {
 	Address string `ini:"address"`
 	Topic   string `ini:"topic"`
+	MaxSize int    `ini:"max_size"`
 }
 
 //type TailLogConf struct {

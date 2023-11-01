@@ -20,12 +20,9 @@ func TestTailLog(t *testing.T) {
 		fmt.Println("tail file failed, err:", err)
 		return
 	}
-	var (
-		msg *tail.Line
-		ok  bool
-	)
+
 	for {
-		msg, ok = <-tails.Lines
+		msg, ok := <-tails.Lines
 		if !ok {
 			fmt.Printf("tail file close reopen, filename:%s\n", tails.Filename)
 			time.Sleep(time.Second)

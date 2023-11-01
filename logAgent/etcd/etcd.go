@@ -3,7 +3,9 @@ package etcd
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"log/slog"
 	"time"
 )
 
@@ -34,4 +36,22 @@ func GetConf(key string) (value []*LogEntry, err error) {
 		}
 	}
 	return
+}
+
+func WatchConf(key string, newConfChan chan<- []*LogEntry) {
+	ch := etcdCli.Watch(context.Background(), key)
+	for resp := range ch {
+		var newConf []*LogEntry
+		for _, evt := range resp.Events {
+			if evt.Type != clientv3.EventTypeDelete {
+				err := json.Unmarshal(evt.Kv.Value, &newConf)
+				if err != nil {
+					slog.Error("Error unmarshalling ", "Error", err)
+					continue
+				}
+			}
+			slog.Info(fmt.Sprintf("Conf Changed: %v\n", newConf))
+			newConfChan <- newConf
+		}
+	}
 }

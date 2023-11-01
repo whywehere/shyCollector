@@ -19,11 +19,11 @@ func TestEtcdOptions(t *testing.T) {
 	defer cli.Close()
 
 	//Put
-	if _, err = cli.Put(context.Background(), "/xxx", "[{\"path\": \"C:\\\\Users\\\\19406\\\\Desktop\\\\go\\\\shyCollector\\\\logAgent\\\\logtest1.log\", \"topic\": \"web_log\"},\n{\"path\": \"C:\\\\Users\\\\19406\\\\Desktop\\\\go\\\\shyCollector\\\\logAgent\\\\logtest2.log\", \"topic\": \"redis_log\"}]"); err != nil {
+	if _, err = cli.Put(context.Background(), "/logAgent/collect_config", "[{\"path\": \"C:\\\\Users\\\\19406\\\\Desktop\\\\go\\\\shyCollector\\\\logAgent\\\\logtest1.log\", \"topic\": \"web_log\"},\n{\"path\": \"C:\\\\Users\\\\19406\\\\Desktop\\\\go\\\\shyCollector\\\\logAgent\\\\logtest2.log\", \"topic\": \"redis_log\"}]"); err != nil {
 		t.Fatal(err)
 	}
 	// Get
-	resp, err := cli.Get(context.Background(), "theshy")
+	resp, err := cli.Get(context.Background(), "/logAgent/collect_config")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func TestWatch(t *testing.T) {
 	}
 	defer cli.Close()
 
-	ch := cli.Watch(context.Background(), "theshy")
+	ch := cli.Watch(context.Background(), "/logAgent/collect_config")
 	for resp := range ch {
 		for _, evt := range resp.Events {
 			t.Log(evt)
