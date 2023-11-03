@@ -36,7 +36,6 @@ func Init(addrs []string, maxSize int) (err error) {
 }
 
 func sendToKafka() {
-
 	for {
 		select {
 		case msg := <-logDataChan:

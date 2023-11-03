@@ -20,7 +20,4 @@ func TestMapTo(t *testing.T) {
 	if err := ini.MapTo(&cfg, "./config.ini"); err != nil {
 		t.Fatal(err)
 	}
-	t.Log(cfg.Address)
-	t.Log(cfg.Topic)
-	t.Log(cfg.LogPath)
 }

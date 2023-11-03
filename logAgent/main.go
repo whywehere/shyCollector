@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gopkg.in/ini.v1"
 	"log/slog"
-	"shyCollector/logAgent/config"
+	"shyCollector/config"
 	"shyCollector/logAgent/etcd"
 	"shyCollector/logAgent/kafka"
 	"shyCollector/logAgent/tailLog"
@@ -18,7 +18,7 @@ var (
 )
 
 func main() {
-	if err := ini.MapTo(&cfg, "C:\\Users\\19406\\Desktop\\go\\shyCollector\\logAgent\\config\\config.ini"); err != nil {
+	if err := ini.MapTo(&cfg, "C:\\Users\\19406\\Desktop\\go\\shyCollector\\config\\config.ini"); err != nil {
 		panic(err)
 	}
 

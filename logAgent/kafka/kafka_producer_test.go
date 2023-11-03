@@ -13,9 +13,9 @@ func TestKafkaProducer(t *testing.T) {
 	config.Producer.Partitioner = sarama.NewRandomPartitioner // 新选出⼀个partition
 	config.Producer.Return.Successes = true                   // 成功交付的消息将在success channel返回
 
-	addr := "127.0.0.1:9092"
+	//addr := "127.0.0.1:9092"
 	// 连接kafka
-	client, err := sarama.NewSyncProducer([]string{addr}, config)
+	client, err := sarama.NewSyncProducer([]string{"192.168.30.130:9092"}, config)
 	if err != nil {
 		slog.Error("sarama.NewSyncProducer()", "Error", err)
 		return

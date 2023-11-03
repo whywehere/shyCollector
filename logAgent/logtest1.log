@@ -8,3 +8,19 @@ eee
 xxx
 zzz
 ppp
+xxx
+ppp
+xxx
+jojo
+jojo
+{"level":"INFO","time":"2023-10-11T22:15:11.903+0800","caller":"logger/logger.go:44","msg":"init logger success"}
+{"level":"INFO","time":"2023-10-11T22:15:11.903+0800","caller":"logger/logger.go:44","msg":"init logger success"}
+{"level":"INFO","time":"2023-10-11T22:15:11.903+0800","caller":"logger/logger.go:44","msg":"init logger success"}
+{"level":"INFO","time":"2023-10-11T22:15:11.903+0800","caller":"logger/logger.go:44","msg":"init logger success"}
+{"level":"INFO","time":"2023-10-11T22:15:11.903+0800","caller":"logger/logger.go:44","msg":"init logger success"}
+{"level":"INFO","time":"2023-10-11T22:15:11.903+0800","caller":"logger/logger.go:44","msg":"init logger success"}
+{"level":"INFO","time":"2023-10-11T22:15:11.903+0800","caller":"logger/logger.go:44","msg":"init logger success"}
+{"level":"INFO","time":"2023-10-11T22:15:11.903+0800","caller":"logger/logger.go:44","msg":"init logger success"}
+{"level":"INFO","time":"2023-10-11T22:15:11.903+0800","caller":"logger/logger.go:44","msg":"init logger success"}
+{"level":"INFO","time":"2023-10-11T22:15:11.903+0800","caller":"logger/logger.go:44","msg":"init logger success"}
+{"level":"INFO","time":"2023-10-11T22:15:11.903+0800","caller":"logger/logger.go:44","msg":"init logger success"}

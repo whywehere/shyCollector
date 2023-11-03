@@ -9,7 +9,7 @@ import (
 
 func TestEtcdOptions(t *testing.T) {
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"127.0.0.1:2379"},
+		Endpoints:   []string{"192.168.30.130:2379"},
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
@@ -19,11 +19,11 @@ func TestEtcdOptions(t *testing.T) {
 	defer cli.Close()
 
 	//Put
-	if _, err = cli.Put(context.Background(), "/logAgent/collect_config", "[{\"path\": \"C:\\\\Users\\\\19406\\\\Desktop\\\\go\\\\shyCollector\\\\logAgent\\\\logtest1.log\", \"topic\": \"web_log\"},\n{\"path\": \"C:\\\\Users\\\\19406\\\\Desktop\\\\go\\\\shyCollector\\\\logAgent\\\\logtest2.log\", \"topic\": \"redis_log\"}]"); err != nil {
+	if _, err = cli.Put(context.Background(), "/logAgent/192.168.47.240/collect_config", "[{\"path\": \"C:\\\\Users\\\\19406\\\\Desktop\\\\go\\\\shyCollector\\\\logAgent\\\\logtest1.log\", \"topic\": \"web_log\"},\n{\"path\": \"C:\\\\Users\\\\19406\\\\Desktop\\\\go\\\\shyCollector\\\\logAgent\\\\logtest2.log\", \"topic\": \"redis_log\"}]"); err != nil {
 		t.Fatal(err)
 	}
 	// Get
-	resp, err := cli.Get(context.Background(), "/logAgent/collect_config")
+	resp, err := cli.Get(context.Background(), "/logAgent/192.168.47.240/collect_config")
 	if err != nil {
 		t.Fatal(err)
 	}
