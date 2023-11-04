@@ -7,17 +7,17 @@ import (
 	"time"
 )
 
-type logData struct {
+type logMessage struct {
 	topic string
 	data  string
 }
 
 var (
 	client      sarama.SyncProducer
-	logDataChan chan *logData
+	logDataChan chan *logMessage
 )
 
-func Init(addrs []string, maxSize int) (err error) {
+func Start(addrs []string, maxSize int) (err error) {
 
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll          // 发送完数据需要leader和follow都确认
@@ -30,7 +30,7 @@ func Init(addrs []string, maxSize int) (err error) {
 		slog.Error("sarama.NewSyncProducer()", "Error", err)
 		return
 	}
-	logDataChan = make(chan *logData, maxSize)
+	logDataChan = make(chan *logMessage, maxSize)
 	go sendToKafka()
 	return
 }
@@ -61,7 +61,7 @@ func sendToKafka() {
 
 // SendToChan 将外部消息存入内部channel
 func SendToChan(topic, data string) {
-	msg := &logData{
+	msg := &logMessage{
 		topic: topic,
 		data:  data,
 	}

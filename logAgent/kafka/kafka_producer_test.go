@@ -15,7 +15,7 @@ func TestKafkaProducer(t *testing.T) {
 
 	//addr := "127.0.0.1:9092"
 	// 连接kafka
-	client, err := sarama.NewSyncProducer([]string{"192.168.30.130:9092"}, config)
+	client, err := sarama.NewSyncProducer([]string{"       :9092"}, config)
 	if err != nil {
 		slog.Error("sarama.NewSyncProducer()", "Error", err)
 		return

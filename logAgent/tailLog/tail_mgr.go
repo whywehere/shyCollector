@@ -21,11 +21,17 @@ func Init(logConf []*etcd.LogEntry) {
 		tskMap:      make(map[string]*TailTask, 16),
 		newConfChan: make(chan []*etcd.LogEntry),
 	}
+
 	for _, entry := range tskMgr.logEntry {
-		tailTask := NewTailTask(entry.Path, entry.Topic)
 		key := fmt.Sprintf("%s_%s", entry.Topic, entry.Path)
-		tskMgr.tskMap[key] = tailTask
+		task, err := NewTailTask(entry.Path, entry.Topic)
+		if err != nil {
+			slog.Error("Failed to create tail task")
+			continue
+		}
+		tskMgr.tskMap[key] = task
 	}
+
 	go tskMgr.run()
 }
 
@@ -37,11 +43,15 @@ func (t *tailLogMgr) run() {
 			for _, entry := range newConf {
 				confKey := fmt.Sprintf("%s_%s", entry.Topic, entry.Path)
 				if _, ok := tskMgr.tskMap[confKey]; !ok {
-					tailObj := NewTailTask(entry.Path, entry.Topic)
-					t.tskMap[confKey] = tailObj
+					tailTask, err := NewTailTask(entry.Path, entry.Topic)
+					if err != nil {
+						slog.Error("Failed to create tail task")
+						continue
+					}
+					t.tskMap[confKey] = tailTask
 				}
 			}
-			// stop the deleted tasks
+			// 停止并删除不再存在的任务
 			for _, oldEntry := range t.logEntry {
 				isDelete := true
 				for _, newEntry := range newConf {
@@ -52,10 +62,10 @@ func (t *tailLogMgr) run() {
 				}
 				if isDelete {
 					key := fmt.Sprintf("%s_%s", oldEntry.Topic, oldEntry.Path)
-					t.tskMap[key].ctx.Done()
+					t.tskMap[key].tailCtx.Done()
 				}
 			}
-
+			t.logEntry = newConf
 		default:
 			time.Sleep(time.Second)
 		}

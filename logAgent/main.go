@@ -4,56 +4,49 @@ import (
 	"fmt"
 	"gopkg.in/ini.v1"
 	"log/slog"
+	"os"
+	"os/signal"
 	"shyCollector/config"
 	"shyCollector/logAgent/etcd"
 	"shyCollector/logAgent/kafka"
 	"shyCollector/logAgent/tailLog"
-	"shyCollector/utils"
-	"sync"
+	"syscall"
 	"time"
 )
 
-var (
-	cfg = new(config.AppConf)
-)
-
 func main() {
+
+	// 启动信号监听
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	cfg := new(config.AppConf)
 	if err := ini.MapTo(&cfg, "C:\\Users\\19406\\Desktop\\go\\shyCollector\\config\\config.ini"); err != nil {
 		panic(err)
 	}
 
-	// initialize kafka
+	// start kafka
 	addr := []string{cfg.KafkaConf.Address}
-	if err := kafka.Init(addr, cfg.KafkaConf.MaxSize); err != nil {
+	if err := kafka.Start(addr, cfg.KafkaConf.MaxSize); err != nil {
 		panic(err)
 	}
-	slog.Info("initialize kafka successfully")
+	slog.Info("start kafka successfully")
 
 	// initialize etcd
 	etcdAddr := []string{cfg.EtcdConf.Address}
-	if err := etcd.Init(etcdAddr, time.Duration(cfg.EtcdConf.Timeout)*time.Second); err != nil {
+	logEntryConf, err := etcd.Start(etcdAddr, time.Duration(cfg.EtcdConf.Timeout)*time.Second, cfg.CollectLogKey)
+	if err != nil {
 		panic(err)
 	}
 	slog.Info("initialize etcd successfully")
-	ip, err := utils.GetOutBoundIp()
-	if err != nil {
-		panic(err)
-	}
-	collectLogKEY := fmt.Sprintf(cfg.CollectLogKey, ip)
-	logEntryConf, err := etcd.GetConf(collectLogKEY)
-	if err != nil {
-		slog.Error("etcd.GetConf", "Error", err)
-		return
-	}
 
-	slog.Info(fmt.Sprintf("get etcdConf successfully, %v\n", logEntryConf))
 	// initialize tailLog
 	tailLog.Init(logEntryConf)
-	slog.Info("initialize tailLog successfully")
+	slog.Info("start tailLog successfully")
+	// 阻塞等待信号
+	<-sigChan
 
-	newConfChan := tailLog.NewConfChan()
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go etcd.WatchConf(cfg.CollectLogKey, newConfChan)
-	wg.Wait()
+	// 在这里执行清理和退出操作
+	fmt.Println("Received signal. Exiting gracefully.")
+	os.Exit(0)
 }
