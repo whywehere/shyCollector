@@ -6,7 +6,6 @@ import (
 	"fmt"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"log/slog"
-	"shyCollector/logAgent/tailLog"
 	"shyCollector/utils"
 	"time"
 )
@@ -23,11 +22,10 @@ func Start(addr []string, timeout time.Duration, collectKey string) (value []*Lo
 		Endpoints:   addr,
 		DialTimeout: timeout,
 	})
-	ip, err := utils.GetOutBoundIp()
+	collectKey, err = utils.GetLocalCollectorKey(collectKey)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	collectKey = fmt.Sprintf(collectKey, ip)
 	resp, err := etcdCli.Get(context.Background(), collectKey)
 
 	if err != nil {
@@ -38,12 +36,10 @@ func Start(addr []string, timeout time.Duration, collectKey string) (value []*Lo
 			return nil, err
 		}
 	}
-	newConfChan := tailLog.NewConfChan()
-	go watchConf(collectKey, newConfChan)
 	return
 }
 
-func watchConf(key string, newConfChan chan<- []*LogEntry) {
+func WatchConf(key string, newConfChan chan<- []*LogEntry) {
 	watchChan := etcdCli.Watch(context.Background(), key)
 	for resp := range watchChan {
 		var newConf []*LogEntry

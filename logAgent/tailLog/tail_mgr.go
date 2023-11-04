@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"shyCollector/logAgent/etcd"
+	"shyCollector/utils"
 	"time"
 )
 
@@ -15,7 +16,7 @@ type tailLogMgr struct {
 	newConfChan chan []*etcd.LogEntry
 }
 
-func Init(logConf []*etcd.LogEntry) {
+func Start(logConf []*etcd.LogEntry, collectKey string) error {
 	tskMgr = &tailLogMgr{
 		logEntry:    logConf,
 		tskMap:      make(map[string]*TailTask, 16),
@@ -31,8 +32,13 @@ func Init(logConf []*etcd.LogEntry) {
 		}
 		tskMgr.tskMap[key] = task
 	}
-
+	collectKey, err := utils.GetLocalCollectorKey(collectKey)
+	if err != nil {
+		return err
+	}
+	go etcd.WatchConf(collectKey, tskMgr.newConfChan)
 	go tskMgr.run()
+	return nil
 }
 
 func (t *tailLogMgr) run() {
@@ -70,8 +76,4 @@ func (t *tailLogMgr) run() {
 			time.Sleep(time.Second)
 		}
 	}
-}
-
-func NewConfChan() chan<- []*etcd.LogEntry {
-	return tskMgr.newConfChan
 }

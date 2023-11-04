@@ -2,7 +2,7 @@ package main
 
 import (
 	"gopkg.in/ini.v1"
-	"shyCollector/config"
+	"shyCollector/logTransfer/config"
 	"shyCollector/logTransfer/es"
 	"shyCollector/logTransfer/kafka"
 )

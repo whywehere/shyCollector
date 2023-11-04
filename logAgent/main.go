@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"shyCollector/config"
+	"shyCollector/logAgent/config"
 	"shyCollector/logAgent/etcd"
 	"shyCollector/logAgent/kafka"
 	"shyCollector/logAgent/tailLog"
@@ -41,12 +41,13 @@ func main() {
 	slog.Info("initialize etcd successfully")
 
 	// initialize tailLog
-	tailLog.Init(logEntryConf)
+	if err := tailLog.Start(logEntryConf, cfg.CollectLogKey); err != nil {
+		panic(err)
+	}
 	slog.Info("start tailLog successfully")
+
 	// 阻塞等待信号
 	<-sigChan
-
-	// 在这里执行清理和退出操作
 	fmt.Println("Received signal. Exiting gracefully.")
 	os.Exit(0)
 }
