@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"gopkg.in/ini.v1"
 	"log/slog"
@@ -19,11 +20,14 @@ func main() {
 	// 启动信号监听
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-
 	cfg := new(config.AppConf)
 	if err := ini.MapTo(&cfg, "C:\\Users\\19406\\Desktop\\go\\shyCollector\\config\\config.ini"); err != nil {
 		panic(err)
 	}
+	flag.StringVar(&cfg.Topic, "topic", cfg.Topic, "")
+	flag.StringVar(&cfg.KafkaConf.Address, "kafka_addr", cfg.KafkaConf.Address, "")
+	flag.StringVar(&cfg.EtcdConf.Address, "etcd_addr", cfg.EtcdConf.Address, "")
+	flag.Parse()
 
 	// start kafka
 	addr := []string{cfg.KafkaConf.Address}
